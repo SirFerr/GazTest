@@ -10,6 +10,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,9 +23,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +37,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -55,7 +61,6 @@ fun CitiesScreen(viewModel: CitiesScreenViewModel = hiltViewModel()) {
     when (state) {
         is CityState.Loading -> SpinningCircle()
         is CityState.Success -> DisplayCityList(state.cities)
-
         is CityState.Error -> ErrorScreen(onRetry = viewModel::loadCities)
     }
 }
@@ -63,8 +68,10 @@ fun CitiesScreen(viewModel: CitiesScreenViewModel = hiltViewModel()) {
 @Composable
 fun DisplayCityList(cities: List<City>) {
     Box(Modifier.fillMaxSize()) {
-        val groupedCities = cities.groupBy {
-            it.city.firstOrNull() ?: ' '
+        val groupedCities = remember(cities) {
+            cities.groupBy {
+                it.city.firstOrNull() ?: ' '
+            }
         }
         val startIndexes = remember(cities) {
             getStartIndexes(groupedCities.entries)
@@ -95,31 +102,38 @@ fun DisplayCityList(cities: List<City>) {
         }
         LetterHeader(
             initial = cities[listState.firstVisibleItemIndex].city.firstOrNull() ?: ' ',
-            modifier = commonModifier.padding(top = 8.dp).then(
-                if (moveStickyHeader) {
-                    Modifier.offset {
-                        IntOffset(0, -listState.firstVisibleItemScrollOffset)
+            modifier = commonModifier
+                .padding(top = 8.dp)
+                .then(
+                    if (moveStickyHeader) {
+                        Modifier.offset {
+                            IntOffset(0, -listState.firstVisibleItemScrollOffset)
+                        }
+                    } else {
+                        Modifier
                     }
-                } else {
-                    Modifier
-                }
-            )
+                )
         )
     }
 }
 
 @Composable
 fun LetterHeader(initial: Char, modifier: Modifier = Modifier) {
-    Text(
-        text = initial.toString(),
-        fontSize = 24.sp,
-        fontFamily = Roboto,
-        fontWeight = FontWeight.Medium,
+    Box(
         modifier = modifier
             .padding(start = 16.dp)
             .size(40.dp),
-        textAlign = TextAlign.Center
-    )
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = initial.toString(),
+            fontSize = 24.sp,
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier,
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 @Composable
@@ -140,20 +154,30 @@ fun CityItem(
         } else {
             Spacer(modifier = modifier)
         }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .clickable { }) {
-            Spacer(modifier = Modifier.size(16.dp))
+        val shape: Shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
 
-            Text(
-                text = city.city,
-                fontSize = 16.sp,
-                fontFamily = Roboto,
-                fontWeight = FontWeight.Normal,
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .wrapContentHeight() // Обрезка Box по форме
+                .clickable {} // Применение clickable к обрезанной области
+                .background(color = Color.Transparent, shape = shape) // Применение фона с обрезкой
+        ) {
+            Row(
                 modifier = Modifier
-                    .weight(1f), maxLines = 1
-            )
+                    .fillMaxWidth()
+                    .height(40.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(
+                    text = city.city,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    maxLines = 1
+                )
+            }
         }
     }
 }
@@ -178,14 +202,14 @@ fun ErrorScreen(onRetry: () -> Unit) {
 
 @Composable
 fun SpinningCircle() {
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "")
     val angle by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 2000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
-        )
+        ), label = ""
     )
 
     Box(
