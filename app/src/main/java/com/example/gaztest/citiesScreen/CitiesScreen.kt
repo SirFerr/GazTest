@@ -24,11 +24,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -49,24 +53,30 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.gaztest.data.City
+import androidx.navigation.NavHostController
+import com.example.gaztest.Destination
+import com.example.gaztest.data.city.City
 import com.example.gaztest.ui.theme.Action
 import com.example.gaztest.ui.theme.Roboto
+import com.google.gson.Gson
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CitiesScreen(viewModel: CitiesScreenViewModel = hiltViewModel()) {
+fun CitiesScreen(
+    navController: NavHostController,
+    viewModel: CitiesScreenViewModel = hiltViewModel()
+) {
     val state = viewModel.cityState.collectAsState().value
 
     when (state) {
         is CityState.Loading -> SpinningCircle()
-        is CityState.Success -> DisplayCityList(state.cities)
+        is CityState.Success -> DisplayCityList(state.cities, navController = navController)
         is CityState.Error -> ErrorScreen(onRetry = viewModel::loadCities)
     }
 }
 
 @Composable
-fun DisplayCityList(cities: List<City>) {
+fun DisplayCityList(cities: List<City>, navController: NavHostController) {
     Box(Modifier.fillMaxSize()) {
         val groupedCities = remember(cities) {
             cities.groupBy {
@@ -96,7 +106,8 @@ fun DisplayCityList(cities: List<City>) {
                     CityItem(
                         city,
                         showCharHeader = startIndexes.contains(index) && listState.firstVisibleItemIndex != index,
-                        commonModifier
+                        commonModifier,
+                        navController = navController
                     )
             }
         }
@@ -129,7 +140,8 @@ fun LetterHeader(initial: Char, modifier: Modifier = Modifier) {
             text = initial.toString(),
             fontSize = 24.sp,
             fontFamily = Roboto,
-            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            fontWeight = FontWeight.Normal,
             modifier = Modifier,
             textAlign = TextAlign.Center
         )
@@ -140,7 +152,8 @@ fun LetterHeader(initial: Char, modifier: Modifier = Modifier) {
 fun CityItem(
     city: City,
     showCharHeader: Boolean,
-    modifier: Modifier
+    modifier: Modifier,
+    navController: NavHostController
 ) {
     Row(
         modifier = Modifier
@@ -160,9 +173,11 @@ fun CityItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
-                .wrapContentHeight() // Обрезка Box по форме
-                .clickable {} // Применение clickable к обрезанной области
-                .background(color = Color.Transparent, shape = shape) // Применение фона с обрезкой
+                .wrapContentHeight()
+                .clickable {
+                    navController.navigate(Destination.WEATHER_SCREEN+"/${Gson().toJson(city)}")
+                }
+                .background(color = Color.Transparent, shape = shape)
         ) {
             Row(
                 modifier = Modifier
@@ -173,6 +188,7 @@ fun CityItem(
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(
                     text = city.city,
+                    fontFamily = Roboto,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     maxLines = 1
@@ -191,10 +207,32 @@ fun ErrorScreen(onRetry: () -> Unit) {
             .padding(horizontal = 16.dp), contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Произошла ошибка")
+            Text(
+                text = "Произошла ошибка",
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                maxLines = 2,
+                fontFamily = Roboto,
+                fontWeight = FontWeight.Medium,
+            )
             Spacer(modifier = Modifier.size(42.dp))
-            Button(onClick = onRetry) {
-                Text(text = "Обновить")
+            Box(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .clip(CircleShape)
+                    .clickable {}
+                    .background(color = Color.Transparent, shape = CircleShape)
+            ) {
+                Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = Action, contentColor = Color.White)) {
+                    Text(
+                        text = "Обновить",
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        maxLines = 1,
+                        fontFamily = Roboto,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
             }
         }
     }

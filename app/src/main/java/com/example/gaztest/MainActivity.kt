@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                         color = Background,
                         contentColor = Content
                     ) {
-                        CitiesScreen()
+                        Navigation()
                     }
                 }
             }

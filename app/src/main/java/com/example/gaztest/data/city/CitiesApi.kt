@@ -1,4 +1,4 @@
-package com.example.gaztest.data
+package com.example.gaztest.data.city
 
 import retrofit2.Response
 import retrofit2.http.GET

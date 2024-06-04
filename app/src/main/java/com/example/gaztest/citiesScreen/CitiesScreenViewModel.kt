@@ -2,8 +2,8 @@ package com.example.gaztest.citiesScreen
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.gaztest.data.CitiesApi
-import com.example.gaztest.data.City
+import com.example.gaztest.data.city.CitiesApi
+import com.example.gaztest.data.city.City
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

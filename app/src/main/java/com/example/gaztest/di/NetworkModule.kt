@@ -1,7 +1,8 @@
 package com.example.gaztest.di
 
 import com.example.gaztest.Constants
-import com.example.gaztest.data.CitiesApi
+import com.example.gaztest.data.city.CitiesApi
+import com.example.gaztest.data.weather.WeatherApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,8 +29,26 @@ object NetworkModule {
         return Retrofit.Builder()
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(Constants.BASE_URL)
+            .baseUrl(Constants.BASE_URL_CITY)
             .build()
             .create(CitiesApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideWeatherApi(): WeatherApi {
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
+
+        return Retrofit.Builder()
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(Constants.BASE_URL_WEATHER)
+            .build()
+            .create(WeatherApi::class.java)
     }
 }
