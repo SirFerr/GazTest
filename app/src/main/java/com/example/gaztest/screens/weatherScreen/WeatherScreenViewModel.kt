@@ -1,8 +1,7 @@
-package com.example.gaztest.weatherScreen
+package com.example.gaztest.screens.weatherScreen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.gaztest.citiesScreen.CityState
+import com.example.gaztest.data.city.City
 import com.example.gaztest.data.weather.Weather
 import com.example.gaztest.data.weather.WeatherApi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,20 +21,20 @@ class WeatherScreenViewModel @Inject constructor(
     private val _weatherState = MutableStateFlow<WeatherState>(WeatherState.Loading)
     val weatherState: StateFlow<WeatherState> = _weatherState.asStateFlow()
 
-
-    fun loadWeather(lat: String,lon: String) {
+    fun loadWeather(lat: String, lon: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = weatherApi.getCurrentWeather(lat,lon)
+                val response = weatherApi.getCurrentWeather(lat, lon)
                 if (response.isSuccessful) {
-                    val weather = response.body()?.let {
-                        _weatherState.value = WeatherState.Success(it)
-                    }
+                    val weather = response.body()!!
+                    _weatherState.value = WeatherState.Success(weather)
                 } else {
-                    _weatherState.value = WeatherState.Error("Failed to load weather: ${response.message()}")
+                    _weatherState.value =
+                        WeatherState.Error("Failed to load weather: ${response.message()}")
                 }
             } catch (e: Exception) {
-                _weatherState.value = WeatherState.Error("Exception occurred: ${e.localizedMessage}")
+                _weatherState.value =
+                    WeatherState.Error("Exception occurred: ${e.localizedMessage}")
             }
         }
     }

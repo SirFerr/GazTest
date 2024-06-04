@@ -1,4 +1,4 @@
-package com.example.gaztest.citiesScreen
+package com.example.gaztest.screens.citiesScreen
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -34,7 +34,8 @@ class CitiesScreenViewModel @Inject constructor(
                     val cities = response.body()?.sortedBy { it.city } ?: listOf()
                     _cityState.value = CityState.Success(cities)
                 } else {
-                    _cityState.value = CityState.Error("Failed to load cities: ${response.message()}")
+                    _cityState.value =
+                        CityState.Error("Failed to load cities: ${response.message()}")
                 }
             } catch (e: Exception) {
                 Log.e("CitiesScreenVM", "Failed to load cities", e)

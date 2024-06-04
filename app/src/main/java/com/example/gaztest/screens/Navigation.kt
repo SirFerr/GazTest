@@ -1,4 +1,4 @@
-package com.example.gaztest
+package com.example.gaztest.screens
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
@@ -6,9 +6,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.gaztest.citiesScreen.CitiesScreen
+import com.example.gaztest.Destination
+import com.example.gaztest.screens.citiesScreen.CitiesScreen
 import com.example.gaztest.data.city.City
-import com.example.gaztest.weatherScreen.WeatherScreen
+import com.example.gaztest.screens.weatherScreen.WeatherScreen
 import com.google.gson.Gson
 
 @Composable
