@@ -1,6 +1,7 @@
 package com.example.gaztest.di
 
-import com.example.gaztest.Constants
+import com.example.gaztest.CityConstants
+import com.example.gaztest.WeatherConstants
 import com.example.gaztest.data.city.CitiesApi
 import com.example.gaztest.data.weather.WeatherApi
 import dagger.Module
@@ -29,7 +30,7 @@ object NetworkModule {
         return Retrofit.Builder()
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(Constants.BASE_URL_CITY)
+            .baseUrl(CityConstants.BASE_URL_CITY)
             .build()
             .create(CitiesApi::class.java)
     }
@@ -47,7 +48,7 @@ object NetworkModule {
         return Retrofit.Builder()
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(Constants.BASE_URL_WEATHER)
+            .baseUrl(WeatherConstants.BASE_URL_WEATHER)
             .build()
             .create(WeatherApi::class.java)
     }
